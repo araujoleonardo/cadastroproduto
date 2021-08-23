@@ -1,59 +1,67 @@
 <template>
   <div id="app">
 
-    <nav>
-      <div class="nav-wrapper blue darken-1">
-        <a href="#" class="brand-logo center">Cadastro de Produtos</a>
-      </div>
+    <nav class="navbar navbar-dark bg-primary">
+      <h3><a href="#" class="card-title" style="color:white">Cadastro de Produtos</a></h3>
     </nav>
+
+    <br>
 
     <div class="container">
 
-      <form>
-
+      <form @submit.prevent="salvar" >
           <label>Nome</label>
-          <input type="text" placeholder="Nome">
+          <input class="form-control" type="text" placeholder="Nome" v-model="produto.nome">
           <label>Quantidade</label>
-          <input type="number" placeholder="QTD">
+          <input class="form-control"  type="number" placeholder="QTD" v-model="produto.quantidade">
           <label>Valor</label>
-          <input type="text" placeholder="Valor">
-          <label>Categoria</label>
-          <input list="categoria" placeholder="Categoria">
+          <input class="form-control" type="text" placeholder="Valor" v-model="produto.valor">
 
-          <button class="waves-effect waves-light btn-small">Salvar<i class="material-icons left">save</i></button>
+          <label>Categoria</label>
+          <select class="form-control">
+            <option v-for="categoria of categorias" :key="categoria.id" :value="categoria.nomecategoria">{{ categoria.nomecategoria }}</option>
+          </select>
+          
+          <br>              
+
+          <button class="btn btn-success">salvar</button>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Cadastrar Categoria</button>
 
       </form>
 
-      <table>
+      <br>
+
+      <table class="table">
 
         <thead>
 
           <tr>
-            <th>NOME</th>
-            <th>QTD</th>
-            <th>VALOR</th>
-            <th>CATEGORIA</th>
-            <th>OPÇÕES</th>
+            <th scope="col">NOME</th>
+            <th scope="col">QTD</th>
+            <th scope="col">VALOR</th>
+            <th scope="col">CATEGORIA</th>
+            <th scope="col">OPÇÕES</th>
           </tr>
 
         </thead>
 
         <tbody>
 
-          <tr v-for="produto of produto" :key="produto.id">
+          <tr v-for="produto of produtos" :key="produto.id">
 
             <td>{{ produto.nome }}</td>
             <td>{{ produto.quantidade }}</td>
             <td>{{ produto.valor }}</td>
             <td>{{ produto.categoria.nomecategoria }}</td>
             <td>
-              <button class="waves-effect btn-small blue darken-1"><i class="material-icons">edit</i></button>
-              <button class="waves-effect btn-small red darken-1"><i class="material-icons">delete</i></button>
+              <button @click="editar(produto)" class="btn btn-primary">Editar</button>
+              <button @click="remover(produto)" class="btn btn-danger">Deletar</button>
             </td>
 
           </tr>
 
         </tbody>
+
       
       </table>
 
@@ -66,23 +74,63 @@
 <script>
 
   import Produto from './services/produto'
+  import Categoria from './services/categoria'
 
-  export default{
+  export default {
 
     data(){
-      return {
-        produto:[]
+
+      return{
+
+        produto: {
+          nome: '',
+          quantidade: '',
+          valor: '',
+          categoria: {
+            nomecategoria: ''
+          }
+        },
+
+
+        produtos: [],
+        categorias: []
       }
+
     },
 
     mounted(){
-      Produto.listar().then(resposta => {
-        console.log(resposta.data)
-        this.produto = resposta.data
-      })
-    }
-  }
 
+      Categoria.listarcategorias().then(answer => {
+        this.categorias = answer.data
+      })
+
+      Produto.listar().then(resposta => {
+        this.produtos = resposta.data
+      })
+
+    },
+
+    methods:{
+
+      salvar(){
+
+        Produto.salvar(this.produto).then(resposta => {
+          alert('Salvo com sucesso!')
+          this.produto = resposta
+        })       
+
+      },
+
+      remover(produto){
+        Produto.apagar(produto).then(resposta => {
+          this.produto = resposta
+          this.listar();
+        })
+      }
+
+    }
+
+  }
 </script>
 
 <style>
